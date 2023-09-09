@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 
 class LinearRegression:
     def __init__( self,
-                  epochs: int = 50,
+                  epochs: int = 20,
                   learning_rate: float = 0.0001,
                   strategy: str = 'SGD',
                   regularization: tuple[ str, float ] = None ):
@@ -42,19 +42,20 @@ class LinearRegression:
                 # initialize random parameters
                 self.params[ 'wi' ] = np.random.uniform(0, 1, size=num_features) * -1
                 self.params[ 'b' ] = np.random.uniform(0, 1) * -1
-                epochs = self.params[ 'ep' ]
 
-                for epoch in range(epochs):
-                    predictions = self.predict(X)
-                    gradients = self.__backward_propagation(X, y, predictions)
-                    self.update_params(gradients)
-                    print(f"Epoch {epoch}: \tLoss {self.cost_function(predictions, y):.2f}")
+            epochs = self.params[ 'ep' ]
+            for epoch in range(epochs):
+                predictions = self.predict(X)
+                gradients = self.__backward_propagation(X, y, predictions)
+                self.update_params(gradients)
+                print(f"Epoch {epoch + 1}: \tLoss {self.cost_function(predictions, y):.2f}")
 
         def NE():
             X_with_intercept = np.column_stack((np.ones(len(X)), X))
-            coefficients = np.linalg.inv(X_with_intercept.T @ X_with_intercept) @ X_with_intercept.T @ y
+            coefficients = np.linalg.pinv(X_with_intercept.T @ X_with_intercept) @ X_with_intercept.T @ y
             self.params[ 'b' ] = coefficients[ 0 ]
             self.params[ 'wi' ] = coefficients[ 1: ]
+            print(f"Loss {self.cost_function(self.predict(X), y):.2f}")
 
         strategy = self.params[ 'stra' ]
         if strategy == 'SGD':
@@ -63,11 +64,13 @@ class LinearRegression:
             NE()
 
     def predict( self, X ):
-        train_input = np.array(X)
         w = self.params[ 'wi' ]
         b = self.params[ 'b' ]
-        predictions = np.multiply(np.transpose(w), train_input) + b
-        return predictions
+        if w is not None and b is not None:
+            train_input = np.array(X)
+            predictions = train_input @ w + b
+            return predictions
+        raise Exception('Model not fitted')
 
     def cost_function( self, predictions, y ):
         cost = np.mean((y - predictions) ** 2)
@@ -93,7 +96,8 @@ class LinearRegression:
         """
         gradients = {}
         df = (y - predictions) * -1
-        dw = np.mean(np.multiply(df, X))  # Weights derivative
+        train_input = np.array(X)
+        dw = np.array([np.mean(np.multiply(df, train_input[:, col])) for col in range(train_input.shape[1])])  # Weights derivative
         db = np.mean(df)  # Bias derivative
 
         if self.params[ 'regu' ] is not None:
