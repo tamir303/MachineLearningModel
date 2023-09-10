@@ -67,8 +67,8 @@ class LinearRegression:
         w = self.params[ 'wi' ]
         b = self.params[ 'b' ]
         if w is not None and b is not None:
-            train_input = np.array(X)
-            predictions = train_input @ w + b
+            x = np.array(X)
+            predictions = x @ w + b
             return predictions
         raise Exception('Model not fitted')
 

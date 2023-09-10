@@ -1,18 +1,30 @@
-from LinearRegression import LinearRegression
-import pandas as pd
-import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn import datasets, metrics
+from LogisticRegression import LogisticRegression
 
-data = pd.read_csv('data_for_lr.csv')
-data = data.dropna()
+# load the digit dataset
+digits = datasets.load_digits()
 
-# training dataset and labels
-train_input = np.array(data.x[ 0:500 ]).reshape(500, 1)
-train_output = np.array(data.y[ 0:500 ]).reshape(500, 1)
+# defining feature matrix(X) and response vector(y)
+X = digits.data
+y = digits.target
 
-# valid dataset and labels
-test_input = np.array(data.x[500:700]).reshape(199,1)
-test_output = np.array(data.y[500:700]).reshape(199,1)
+# splitting X and y into training and testing sets
+X_train, X_test,\
+	y_train, y_test = train_test_split(X, y,
+									test_size=0.4,
+									random_state=1)
 
-lr = LinearRegression()
-lr.fit(train_input, train_output)
-lr.plot(test_input, test_output)
+# create logistic regression object
+reg = LogisticRegression()
+
+# train the model using the training sets
+reg.fit(X_train, y_train)
+
+# making predictions on the testing set
+y_pred = reg.predict(X_test)
+
+# comparing actual response values (y_test)
+# with predicted response values (y_pred)
+print("Logistic Regression model accuracy(in %):",
+	metrics.accuracy_score(y_test, y_pred)*100)
