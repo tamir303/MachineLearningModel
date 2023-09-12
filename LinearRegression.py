@@ -1,7 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-
 class LinearRegression:
     def __init__( self,
                   epochs: int = 20,
@@ -34,8 +33,6 @@ class LinearRegression:
         - X (numpy.ndarray): Input features (independent variables).
         - y (numpy.ndarray): Target values (dependent variable).
         """
-        self.__validate_params(X, y)
-
         def SGD():
             if self.params['wi'] is None:
                 num_features = 1 if isinstance(X[ 0 ], (float, int)) else len(X[ 0 ])
@@ -47,7 +44,7 @@ class LinearRegression:
             for epoch in range(epochs):
                 predictions = self.predict(X)
                 gradients = self.__backward_propagation(X, y, predictions)
-                self.update_params(gradients)
+                self.__update_params(gradients)
                 print(f"Epoch {epoch + 1}: \tLoss {self.cost_function(predictions, y):.2f}")
 
         def NE():
@@ -117,7 +114,7 @@ class LinearRegression:
         gradients[ 'db' ] = db
         return gradients
 
-    def update_params( self, gradients ):
+    def __update_params( self, gradients ):
         grad_b = gradients[ 'db' ]
         grad_w = gradients[ 'dw' ]
         lr = self.params[ 'lr' ]
@@ -134,19 +131,3 @@ class LinearRegression:
         plt.ylabel('Test Output or Predicted output')
         plt.legend()
         plt.show()
-
-    def __validate_params( self, X, y ):
-        if not isinstance(X, np.ndarray) or not isinstance(y, np.ndarray):
-            raise ValueError("X and y must be NumPy arrays.")
-
-        if len(X) != len(y):
-            raise ValueError("X and y must have the same number of data points.")
-
-        if len(X.shape) == 1:
-            X = X.reshape(-1, 1)  # Convert 1D array to a 2D column vector
-
-        if len(y.shape) == 1:
-            y = y.reshape(-1, 1)  # Convert 1D array to a 2D column vector
-
-        if X.shape[ 0 ] != y.shape[ 0 ]:
-            raise ValueError("Number of rows in X and y must be equal.")
