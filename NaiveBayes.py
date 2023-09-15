@@ -1,6 +1,5 @@
 import numpy as np
 
-
 class ClassifierNB:
     def __init__( self ):
         self.params = {}
@@ -12,6 +11,7 @@ class ClassifierNB:
         self.params[ 'cond_var' ] = np.unique(x)
         self.params[ 'class_prob' ] = self.__prob_matrix(y)
         self.params[ 'class_var' ] = np.unique(y)
+
 
     def predict( self, X ):
         x = np.array(X)
@@ -57,3 +57,48 @@ class ClassifierNB:
         predicted_class = max(predictions, key=predictions.get)
 
         return predicted_class
+
+
+class GaussianNB:
+    def __init__( self ):
+        self.params = {}
+
+    def fit( self, X, y ):
+        x = np.array(X)
+        y = np.array(y)
+        self.params['classes'] = np.unique(y)
+        for c in self.params['classes']:
+            x_c = x[y == c]
+            self.params[c] = {
+                'mean': x_c.mean(axis=0),
+                'std': x_c.std(axis=0) + 1e-10,
+                'prob': len(y[y == c]) / len(y)
+            }
+
+    def predict( self, X ):
+        predictions = []
+        for x in np.array(X):
+            argmax_class_prob = self.__class_probabilities(x, argmax=True)
+            predictions.append(argmax_class_prob)
+
+        return predictions
+
+    def __likelihod( self, x, mean, std ):
+        exp = np.exp(-((x - mean) ** 2) / (2 * (std ** 2)))
+        scalar = 1 / np.sqrt(2 * np.pi * std ** 2)
+
+        return exp / scalar
+
+    def __class_probabilities( self, x, argmax=False ):
+        class_probabilities = {}
+        for c in self.params['classes']:
+            params = self.params[c]
+            mean, std, cls_prob = params['mean'], params['std'], np.log(params['prob'])
+            probs = self.__likelihod(x, mean, std)
+            log_probs = np.sum(np.log(probs), axis=0) + cls_prob
+            class_probabilities[c] = log_probs
+
+        if argmax:
+            return max(class_probabilities, key=class_probabilities.get)
+        else:
+            return class_probabilities
